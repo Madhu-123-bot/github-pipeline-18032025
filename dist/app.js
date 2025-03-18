@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 app.get("/", (req, res) => {
     res.json({
-        message: "Hey, I am nodejs app in AzureVM using GitHubActions!",
+        message: "Hey, I am updated from the server and deployed via GitHub Actions!",
     });
 });
 app.listen(PORT, () => {
