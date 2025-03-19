@@ -1,0 +1,72 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install SSH client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client
+
+      - name: Setup SSH keys
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: ssh -v -o StrictHostKeyChecking=no azureuser@${{ secrets.AZURE_HOST }} "echo 'Connection successful'"
+
+      - name: Deploy to Azure VM and Setup Nginx
+        run: |
+          ssh -o StrictHostKeyChecking=no azureuser@${{ secrets.AZURE_HOST }} << 'EOF'
+          # Load Node.js
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm use 22.12.0
+
+          # Navigate to project folder
+          cd ~/github-pipeline-18032025
+
+          # Pull latest changes
+          git pull origin main
+
+          # Install dependencies and build project
+          npm ci
+          npm run build
+
+          # Install PM2 if not installed
+          npm install -g pm2
+
+          # Stop existing PM2 process and restart the Express server
+          pm2 stop github-pipeline-test || true
+          pm2 start src/app.ts --name github-pipeline-test --watch
+
+          # Install Nginx if not installed
+          sudo apt-get update
+          sudo apt-get install -y nginx
+
+          # Clear existing files in /var/www/html/
+          sudo rm -rf /var/www/html/*
+
+          # Extract message from app.ts and create an HTML page
+          # MESSAGE=$(grep -oP '(?<="message": ")[^"]*' src/app.ts)
+          # sudo bash -c 'echo "<html><head><title>Deployment</title></head><body><h2>${MESSAGE}</h2></body></html>" > /var/www/html/index.html'
+
+          # Restart Nginx to apply changes
+          sudo systemctl restart nginx
+
+          # Restart PM2 process to reflect changes
+          pm2 restart github-pipeline-test
+
+          echo "Deployment successful!"
+          EOF
