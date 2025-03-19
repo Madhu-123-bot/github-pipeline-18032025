@@ -59,8 +59,8 @@ jobs:
           sudo rm -rf /var/www/html/*
 
           # Extract message from app.ts and create an HTML page
-          MESSAGE=$(grep -oP '(?<="message": ")[^"]*' src/app.ts)
-          sudo bash -c 'echo "<html><head><title>Deployment</title></head><body><h2>${MESSAGE}</h2></body></html>" > /var/www/html/index.html'
+          # MESSAGE=$(grep -oP '(?<="message": ")[^"]*' src/app.ts)
+          # sudo bash -c 'echo "<html><head><title>Deployment</title></head><body><h2>${MESSAGE}</h2></body></html>" > /var/www/html/index.html'
 
           # Restart Nginx to apply changes
           sudo systemctl restart nginx
