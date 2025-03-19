@@ -29,7 +29,7 @@ jobs:
       - name: Deploy to Azure VM and Setup Nginx
         run: |
           ssh -o StrictHostKeyChecking=no azureuser@${{ secrets.AZURE_HOST }} << 'EOF'
-          # Load Node.js
+          # Load Node.js (Ensure Node 22.12.0 is used)
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           nvm use 22.12.0
@@ -48,9 +48,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y nginx
 
-          # Extract message from app.ts and create an HTML page
-          MESSAGE=$(grep -oP '(?<="message": ")[^"]*' src/app.ts)
-          sudo bash -c 'echo "<html><head><title>Deployment</title></head><body><h2>${MESSAGE}</h2></body></html>" > /var/www/html/index.html'
+          # Clear existing files in /var/www/html/
+          sudo rm -rf /var/www/html/*
+
+          # Copy latest app.ts content into index.html
+          sudo cp src/app.ts /var/www/html/index.html
 
           # Restart Nginx to apply changes
           sudo systemctl restart nginx
