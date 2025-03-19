@@ -6,13 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = require("dotenv");
 const envFile = `.env.${process.env.NODE_ENV || "dev"}`;
-(0, dotenv_1.config)({ path: envFile }); // Load environment variables from.env file
+(0, dotenv_1.config)({ path: envFile }); // Load environment variables from .env file
 const PORT = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 app.get("/", (req, res) => {
-    res.json({
-        message: "Hey, I am updated from the server and deployed via GitHub Actions!",
-    });
+    res.send("<h1>Hello world !!!!</h1>");
 });
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
