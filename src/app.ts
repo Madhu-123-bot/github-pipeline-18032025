@@ -9,7 +9,7 @@ const app = express();
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Hey, I am updated from the server and deployed via GitHub Actions and need to do SSL !!!!!!!!!!!!!!",
+    message: "<h1>Test file deployed</h1>",
   });
 });
 
