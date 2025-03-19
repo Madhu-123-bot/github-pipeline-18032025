@@ -26,15 +26,36 @@ jobs:
       - name: Test SSH Connection
         run: ssh -v -o StrictHostKeyChecking=no azureuser@${{ secrets.AZURE_HOST }} "echo 'Connection successful'"
 
-      - name: Deploy to AzureVM instance
+      - name: Deploy to Azure VM and Setup Nginx
         run: |
           ssh -o StrictHostKeyChecking=no azureuser@${{ secrets.AZURE_HOST }} << 'EOF'
+          # Load Node.js (Ensure Node 22.12.0 is used)
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           nvm use 22.12.0
+
+          # Navigate to project folder
           cd ~/github-pipeline-18032025
+
+          # Pull latest changes
           git pull origin main
+
+          # Install dependencies and build project
           npm ci
           npm run build
-          pm2 restart github-pipeline-test
+
+          # Install Nginx if not installed
+          sudo apt-get update
+          sudo apt-get install -y nginx
+
+          # Clear existing files in /var/www/html/
+          sudo rm -rf /var/www/html/*
+
+          # Copy latest app.ts content into index.html
+          sudo cp src/app.ts /var/www/html/index.html
+
+          # Restart Nginx to apply changes
+          sudo systemctl restart nginx
+
+          echo "Deployment successful!"
           EOF
