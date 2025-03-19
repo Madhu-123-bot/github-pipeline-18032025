@@ -65,5 +65,8 @@ jobs:
           # Restart Nginx to apply changes
           sudo systemctl restart nginx
 
+          # Restart PM2 process to reflect changes
+          pm2 restart github-pipeline-test
+
           echo "Deployment successful!"
           EOF
