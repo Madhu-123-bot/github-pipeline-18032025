@@ -48,8 +48,8 @@ jobs:
           npm install -g pm2
 
           # Stop existing PM2 process and restart the Express server
-          pm2 stop my-express-app || true
-          pm2 start src/app.ts --name my-express-app --watch
+          pm2 stop github-pipeline-test || true
+          pm2 start src/app.ts --name github-pipeline-test --watch
 
           # Install Nginx if not installed
           sudo apt-get update
